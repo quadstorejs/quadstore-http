@@ -1,5 +1,7 @@
 
+import { Readable } from "node:stream";
 import { Context, Hono } from "hono";
+import { stream } from "hono/streaming";
 import { accepts } from "hono/accepts";
 import { Quadstore } from "quadstore";
 import { QueryEngine } from '@comunica/query-sparql-rdfjs';
@@ -28,32 +30,6 @@ const negotiateQuadsFormat = (ctx: Context): string => {
     default: 'application/n-quads',
   });
   return result;
-};
-
-const readableToString = (readable: NodeJS.ReadableStream): Promise<string> => {
-  return new Promise((resolve, reject) => {
-    let buffer = '';
-    const onData = (chunk: string) => {
-      buffer += chunk;
-    };
-    const onEnd = () => {
-      cleanup();
-      resolve(buffer);
-    };
-    const onError = (err: Error) => {
-      cleanup();
-      reject(err);
-    };
-    const cleanup = () => {
-      readable.removeListener('data', onData);
-      readable.removeListener('end', onEnd);
-      readable.removeListener('error', onError);
-    };
-    readable.setEncoding('utf8');
-    readable.on('data', onData);
-    readable.on('end', onEnd);
-    readable.on('error', onError);
-  });
 };
 
 export const initSparqlController = (app: Hono, store: Quadstore) => {
@@ -85,21 +61,30 @@ export const initSparqlController = (app: Hono, store: Quadstore) => {
       return ctx.json({ error: 'invalid query' }, 400);
     }
 
-    const has_quad_result = /\s*(?:CONSTRUCT|DESCRIBE)/i.test(query);
+    const query_result = await engine.query(query, {
+      sources: [store],
+      destination: store,
+    });
 
-    if (has_quad_result) {
-      const result_format = negotiateQuadsFormat(ctx);
-      ctx.header('content-type', result_format);
-      const quad_stream = await engine.query(query, { sources: [store] });
-      const result = await engine.resultToString(quad_stream, result_format);
-      return ctx.body(await readableToString(result.data), 200);
+    if (query_result.resultType === 'void') {
+      await query_result.execute();
+      return ctx.body(null, 204);
     }
 
-    const result_format = negotiateBindingsFormat(ctx);
+    const result_format = query_result.resultType === 'quads'
+      ? negotiateQuadsFormat(ctx)
+      : negotiateBindingsFormat(ctx);
+
     ctx.header('content-type', result_format);
-    const binding_stream = await engine.query(query, { sources: [store] });
-    const result = await engine.resultToString(binding_stream, result_format);
-    return ctx.body(await readableToString(result.data), 200);
+
+    const string_result = await engine.resultToString(query_result, result_format);
+
+    ctx.status(200);
+
+    return stream(ctx, async (stream) => {
+      await stream.pipe(Readable.toWeb(string_result.data as Readable) as ReadableStream);
+    });
+
   });
 
 

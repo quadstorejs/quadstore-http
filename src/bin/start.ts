@@ -10,9 +10,9 @@ import { Quadstore } from "quadstore";
   const { namedNode, literal, defaultGraph, quad } = data_factory;
 
   const quads = [
-    quad(namedNode('ex://s0'), namedNode('ex://p0'), namedNode('ex://o0'), namedNode('ex://g0')),
-    quad(namedNode('ex://s1'), namedNode('ex://p1'), literal('literal'), namedNode('ex://g1')),
-    quad(namedNode('ex://s2'), namedNode('ex://p2'), namedNode('ex://o2'), namedNode('ex://g2')),
+    quad(namedNode('ex://s0'), namedNode('ex://p0'), namedNode('ex://o0'), defaultGraph()),
+    quad(namedNode('ex://s1'), namedNode('ex://p1'), literal('literal'), defaultGraph()),
+    quad(namedNode('ex://s2'), namedNode('ex://p2'), namedNode('ex://o2'), defaultGraph()),
   ];
 
   const store = new Quadstore({
@@ -33,7 +33,9 @@ import { Quadstore } from "quadstore";
 
   test with:
 
-    curl "http://127.0.0.1:8080/sparql?query=${encodeURIComponent('SELECT *  WHERE { GRAPH ?g { ?s ?p ?o } }')}"
+    curl "http://127.0.0.1:8080/sparql?query=${encodeURIComponent('SELECT *  WHERE { ?s ?p ?o }')}"
+
+    curl "http://127.0.0.1:8080/sparql?query=${encodeURIComponent('INSERT DATA { <http://example.org/something> <http://example.org/hasSomething> "some value" . }')}"
 
   `);
 
