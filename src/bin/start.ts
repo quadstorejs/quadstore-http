@@ -35,8 +35,6 @@ import { Quadstore } from "quadstore";
 
     curl "http://127.0.0.1:8080/sparql?query=${encodeURIComponent('SELECT *  WHERE { ?s ?p ?o }')}"
 
-    curl "http://127.0.0.1:8080/sparql?query=${encodeURIComponent('INSERT DATA { <http://example.org/something> <http://example.org/hasSomething> "some value" . }')}"
-
   `);
 
 })().catch(console.error);

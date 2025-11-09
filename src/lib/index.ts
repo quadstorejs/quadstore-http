@@ -22,6 +22,13 @@ export interface Events {
   close: [];
 }
 
+export class QuadstoreHono extends Hono {
+  constructor(store: Quadstore) {
+    super()
+    initSparqlController(this, store);
+  }
+}
+
 export class QuadstoreHttpServer extends EventEmitter<Events> {
 
   #app: Hono;
@@ -30,7 +37,7 @@ export class QuadstoreHttpServer extends EventEmitter<Events> {
 
   constructor(store: Quadstore, opts: Opts = {}) {
     super();
-    this.#app = new Hono();
+    this.#app = new QuadstoreHono(store);
     this.#server = serve({
       ...opts,
       hostname: opts.hostname ?? '127.0.0.1',
@@ -51,9 +58,6 @@ export class QuadstoreHttpServer extends EventEmitter<Events> {
       const then = Date.now();
       debug(`${signature} - ${ctx.res.status} (${then - now}ms)`);
     });
-
-    initSparqlController(this.#app, this.#quadstore);
-
   }
 
   #onListen = () => {
@@ -97,5 +101,4 @@ export class QuadstoreHttpServer extends EventEmitter<Events> {
       });
     });
   }
-
 }
