@@ -25,11 +25,9 @@ describe('SPARQL', () => {
 
   const app = new QuadstoreHono(store)
 
-  beforeEach(async () => {
+  beforeAll(async () => {
     await store.open();
-
-    // @ts-ignore
-    fetcher = new SparqlEndpointFetcher({ fetch: app.request })
+    fetcher = new SparqlEndpointFetcher({ fetch: app.request as typeof fetch })
   })
 
   beforeEach(async () => {
@@ -46,16 +44,19 @@ describe('SPARQL', () => {
     expect(await selectSPO(fetcher)).toHaveLength(3)
   })
 
-  test('simple INSERT Data', async () => {
-    expect(await selectSPO(fetcher)).toHaveLength(0)
+  describe('Update', () => {
     const update = `INSERT DATA { <http://example.org/something> <http://example.org/hasSomething> "some value" . }`
-    await fetcher.fetchUpdate('/sparql', update)
-    expect(await selectSPO(fetcher)).toHaveLength(1)
-  })
-  test('can not update with GET', async () => {
-    const update = `INSERT DATA { <http://example.org/something> <http://example.org/hasSomething> "some value" . }`
-    const response = await app.request(`/sparql?query=${encodeURIComponent(update)}`)
-    expect(response.status).toBe(405)
+
+    test('simple INSERT Data', async () => {
+      expect(await selectSPO(fetcher)).toHaveLength(0)
+      await fetcher.fetchUpdate('/sparql', update)
+      expect(await selectSPO(fetcher)).toHaveLength(1)
+    })
+
+    test('can not update with GET', async () => {
+      const response = await app.request(`/sparql?query=${encodeURIComponent(update)}`)
+      expect(response.status).toBe(405)
+    })
   })
 })
 
