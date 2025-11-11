@@ -1,10 +1,14 @@
 {
+  "type": "module",
   "devDependencies": {
     "@types/debug": "^4.1.12",
     "@types/node": "^24.10.0",
+    "arrayify-stream": "^3.0.0",
+    "fetch-sparql-endpoint": "^6.2.0",
     "memory-level": "^3.1.0",
     "rdf-data-factory": "^2.0.2",
-    "typescript": "^5.9.3"
+    "typescript": "^5.9.3",
+    "vitest": "^4.0.8"
   },
   "dependencies": {
     "@comunica/query-sparql-rdfjs": "^4.4.1",
@@ -16,6 +20,7 @@
     "quadstore": "^15.4.1"
   },
   "scripts": {
-    "build": "tsc"
+    "build": "tsc",
+    "test": "vitest"
   }
 }

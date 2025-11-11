@@ -43,6 +43,7 @@ export const initSparqlController = (app: Hono, store: Quadstore) => {
     if (ctx.req.method === 'POST') {
       switch (ctx.req.header('content-type')) {
         case 'application/sparql-query':
+        case 'application/sparql-update':
           query = await ctx.req.text();
           break;
         case 'application/x-www-form-urlencoded':
@@ -58,6 +59,7 @@ export const initSparqlController = (app: Hono, store: Quadstore) => {
     }
 
     if (typeof query !== 'string') {
+
       return ctx.json({ error: 'invalid query' }, 400);
     }
 
@@ -67,6 +69,9 @@ export const initSparqlController = (app: Hono, store: Quadstore) => {
     });
 
     if (query_result.resultType === 'void') {
+      if (ctx.req.method === 'GET') {
+        return ctx.json({ error: 'unsupported method for update query' }, 405);
+      }
       await query_result.execute();
       return ctx.body(null, 204);
     }
