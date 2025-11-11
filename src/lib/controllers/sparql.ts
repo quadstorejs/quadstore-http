@@ -5,7 +5,6 @@ import { stream } from "hono/streaming";
 import { accepts } from "hono/accepts";
 import { Quadstore } from "quadstore";
 import { QueryEngine } from '@comunica/query-sparql-rdfjs';
-import { Parser as SparqlParser } from 'sparqljs'
 
 
 const negotiateBindingsFormat = (ctx: Context): string => {
@@ -55,10 +54,6 @@ export const initSparqlController = (app: Hono, store: Quadstore) => {
       }
     } else if (ctx.req.method === 'GET') {
       query = ctx.req.query('query');
-      const parsedQuery = new SparqlParser({ sparqlStar: true }).parse(query)
-      if (parsedQuery.type === 'update') {
-        return ctx.json({ error: 'SPARQL Update requests must use HTTP POST' }, 405)
-      }
     } else {
       return ctx.json({ error: 'unsupported HTTP method' });
     }
@@ -74,6 +69,9 @@ export const initSparqlController = (app: Hono, store: Quadstore) => {
     });
 
     if (query_result.resultType === 'void') {
+      if (ctx.req.method === 'GET') {
+        return ctx.json({ error: 'unsupported method for update query' }, 405);
+      }
       await query_result.execute();
       return ctx.body(null, 204);
     }
