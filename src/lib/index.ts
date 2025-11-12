@@ -33,7 +33,6 @@ export class QuadstoreHttpServer extends EventEmitter<Events> {
 
   #app: Hono;
   #server: ServerType;
-  #quadstore: Quadstore;
 
   constructor(store: Quadstore, opts: Opts = {}) {
     super();
@@ -47,8 +46,6 @@ export class QuadstoreHttpServer extends EventEmitter<Events> {
     this.#server.on('close', this.#onClose);
     this.#server.on('error', this.#onError);
     this.#server.on('listening', this.#onListen);
-
-    this.#quadstore = store;
 
     this.#app.use(async (ctx, next) => {
       const now = Date.now();
@@ -97,7 +94,8 @@ export class QuadstoreHttpServer extends EventEmitter<Events> {
   async close(): Promise<void> {
     return new Promise<void>((resolve, reject) => {
       this.#server.close((err) => {
-        err ? reject(err) : resolve();
+        if (err) reject(err);
+        else resolve();
       });
     });
   }
