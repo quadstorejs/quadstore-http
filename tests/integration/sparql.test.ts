@@ -1,9 +1,10 @@
-import { describe, test, expect, beforeEach, beforeAll } from 'vitest'
-import { SparqlEndpointFetcher } from 'fetch-sparql-endpoint'
-import { DataFactory } from 'rdf-data-factory';
-import { MemoryLevel } from 'memory-level';
-import { Quadstore } from 'quadstore';
 import { arrayifyStream } from 'arrayify-stream'
+import { SparqlEndpointFetcher } from 'fetch-sparql-endpoint'
+import { MemoryLevel } from 'memory-level'
+import { Quadstore } from 'quadstore'
+import { DataFactory } from 'rdf-data-factory'
+import { describe, test, expect, beforeEach, beforeAll } from 'vitest'
+
 import { QuadstoreHono } from '../../src/lib/'
 
 async function selectSPO(fetcher: SparqlEndpointFetcher) {
@@ -16,17 +17,17 @@ describe('SPARQL', () => {
   let fetcher: SparqlEndpointFetcher
 
   const data_factory = new DataFactory()
-  const { namedNode, literal, defaultGraph, quad } = data_factory;
+  const { namedNode, literal, defaultGraph, quad } = data_factory
 
   const store = new Quadstore({
     backend: new MemoryLevel(),
     dataFactory: data_factory,
-  });
+  })
 
   const app = new QuadstoreHono(store)
 
   beforeAll(async () => {
-    await store.open();
+    await store.open()
     fetcher = new SparqlEndpointFetcher({ fetch: app.request as typeof fetch })
   })
 
@@ -39,8 +40,8 @@ describe('SPARQL', () => {
       quad(namedNode('ex://s0'), namedNode('ex://p0'), namedNode('ex://o0'), defaultGraph()),
       quad(namedNode('ex://s1'), namedNode('ex://p1'), literal('literal'), defaultGraph()),
       quad(namedNode('ex://s2'), namedNode('ex://p2'), namedNode('ex://o2'), defaultGraph()),
-    ];
-    await store.multiPut(quads);
+    ]
+    await store.multiPut(quads)
     expect(await selectSPO(fetcher)).toHaveLength(3)
   })
 
@@ -59,4 +60,3 @@ describe('SPARQL', () => {
     })
   })
 })
-
