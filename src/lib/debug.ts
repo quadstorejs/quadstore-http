@@ -1,4 +1,3 @@
+import Debug from 'debug'
 
-import Debug from 'debug';
-
-export const server = Debug('quadstore:http:server');
+export const server = Debug('quadstore:http:server')

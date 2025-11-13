@@ -6,6 +6,8 @@
     "arrayify-stream": "^3.0.0",
     "fetch-sparql-endpoint": "^6.2.0",
     "memory-level": "^3.1.0",
+    "oxfmt": "^0.13.0",
+    "oxlint": "^1.28.0",
     "rdf-data-factory": "^2.0.2",
     "typescript": "^5.9.3",
     "vitest": "^4.0.8"
@@ -21,6 +23,8 @@
   },
   "scripts": {
     "build": "tsc",
-    "test": "vitest"
+    "test": "vitest",
+    "lint": "oxlint",
+    "format": "oxfmt"
   }
 }
